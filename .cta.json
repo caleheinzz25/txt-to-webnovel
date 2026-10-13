@@ -1,0 +1,25 @@
+{
+  "projectName": "txt-to-webnovel",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "bun",
+  "includeExamples": false,
+  "tailwind": true,
+  "projectPreset": "default",
+  "addOnOptions": {},
+  "git": true,
+  "install": true,
+  "intent": true,
+  "routerOnly": false,
+  "version": 1,
+  "framework": "solid",
+  "chosenAddOns": [
+    "biome",
+    "nitro",
+    "store",
+    "better-auth",
+    "solid-ui",
+    "t3env",
+    "tanstack-query"
+  ]
+}
