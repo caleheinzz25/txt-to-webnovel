@@ -114,6 +114,8 @@ function ChapterReaderPage() {
     const savedFontSize = localStorage.getItem('readerFontSize')
     if (savedFontSize) {
       setFontSize(parseInt(savedFontSize, 10))
+    } else if (window.innerWidth < 640) {
+      setFontSize(16)
     }
 
     // Scroll listener for reading progress

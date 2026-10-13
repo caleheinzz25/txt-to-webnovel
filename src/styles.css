@@ -1060,6 +1060,7 @@ button {
   background: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   z-index: 100;
+  padding-top: env(safe-area-inset-top, 0);
 }
 
 .reader-header {
@@ -1289,6 +1290,8 @@ button {
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease;
+  padding-top: env(safe-area-inset-top, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 @keyframes slideIn {
@@ -1540,7 +1543,7 @@ button {
 .reader-bottom-nav {
   max-width: 750px;
   margin: 2rem auto 4rem;
-  padding: 1.5rem 1rem;
+  padding: 1.5rem 1rem calc(1.5rem + env(safe-area-inset-bottom, 0));
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -1657,39 +1660,86 @@ button {
   justify-content: center;
 }
 
-/* Touch targets and Mobile enhancements */
+/* ===== Touch Targets and Mobile Responsiveness ===== */
+
 @media (max-width: 768px) {
+  /* Prevent iOS Safari auto-zoom when tapping inputs */
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
   .main-container {
-    padding: 1rem 0.75rem;
+    padding: 0.875rem max(0.75rem, env(safe-area-inset-right)) calc(1.5rem + env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
   }
 
   .header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
   }
 
   .header h1 {
-    font-size: 2.25rem;
+    font-size: 2rem;
+  }
+
+  /* Search & Library on mobile */
+  .search-bar {
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-input-wrapper {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .sort-controls {
+    width: 100%;
+  }
+
+  .sort-select {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .sort-order-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .novels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1rem;
+  }
+
+  .novel-card-cover {
+    height: 140px;
   }
 
   .dropzone {
-    padding: 2rem 1rem;
-    border-radius: 12px;
+    padding: 1.75rem 1rem;
+    border-radius: 14px;
   }
 
+  /* Detail page on tablet / mobile */
   .novel-header {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
   }
 
   .novel-cover {
-    width: 160px;
-    height: 220px;
+    width: 140px;
+    height: 195px;
+    border-radius: 14px;
   }
 
   .novel-info h1 {
-    font-size: 1.6rem;
+    font-size: 1.5rem;
+    line-height: 1.3;
   }
 
   .novel-meta {
@@ -1700,11 +1750,14 @@ button {
   .words-control-box {
     max-width: 100%;
     text-align: left;
+    padding: 1rem;
+    border-radius: 12px;
   }
 
   .words-control-inputs {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.65rem;
   }
 
   .words-input-wrapper {
@@ -1713,84 +1766,221 @@ button {
 
   .preset-btn-group {
     justify-content: space-between;
+    width: 100%;
   }
 
   .preset-chip {
     flex: 1;
     text-align: center;
-    padding: 0.5rem 0.25rem;
+    padding: 0.6rem 0.25rem;
+    min-height: 40px;
+    font-size: 0.85rem;
   }
 
   .resplit-btn {
     width: 100%;
     justify-content: center;
-    padding: 0.75rem;
+    padding: 0.85rem;
+    min-height: 46px;
+    font-size: 0.95rem;
   }
 
-  /* Reader mobile */
+  .chapters-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .chapter-search-box {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  /* Reader view on mobile */
   .reader-header {
-    padding: 0.5rem 0.5rem;
-    gap: 0.35rem;
+    padding: 0.45rem 0.5rem;
+    gap: 0.3rem;
+  }
+
+  .reader-header-left {
+    gap: 0.2rem;
+  }
+
+  .reader-actions {
+    gap: 0.25rem;
+  }
+
+  .action-btn,
+  .back-btn {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
   }
 
   .reader-title {
-    padding: 0 0.35rem;
+    padding: 0 0.25rem;
     min-width: 0;
   }
 
   .reader-title h2 {
     font-size: 0.85rem;
     line-height: 1.25;
+    -webkit-line-clamp: 1;
+  }
+
+  .reader-title span {
+    font-size: 0.7rem;
+    margin-top: 0.1rem;
   }
 
   .reader-content {
-    padding: 1.25rem 1rem 2.5rem;
-    line-height: 1.85;
+    padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom, 0));
+    line-height: 1.8;
   }
 
   .reader-content p {
-    margin-bottom: 1.25em;
+    margin-bottom: 1.2em;
     text-align: left;
   }
 
+  /* Thumb-friendly 2-row layout for reader navigation */
   .reader-bottom-actions {
-    grid-template-columns: 1fr;
-    gap: 0.6rem;
+    display: grid;
+    grid-template-columns: 1fr 1.25fr;
+    grid-template-areas:
+      "prev next"
+      "list list";
+    gap: 0.65rem;
+  }
+
+  .reader-bottom-actions > :nth-child(1) {
+    grid-area: prev;
+  }
+
+  .reader-bottom-actions > :nth-child(2) {
+    grid-area: list;
+  }
+
+  .reader-bottom-actions > :nth-child(3) {
+    grid-area: next;
   }
 
   .bottom-nav-btn {
     width: 100%;
-    padding: 0.75rem 1rem;
-  }
-
-  .action-btn,
-  .back-btn {
-    min-width: 36px;
-    min-height: 36px;
-    padding: 0.35rem;
-    flex-shrink: 0;
+    min-height: 46px;
+    padding: 0.75rem 0.75rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
   }
 
   .nav-btn {
-    min-height: 38px;
+    min-height: 40px;
     padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
   }
 
   .chapter-list-panel {
-    max-width: 85%;
+    max-width: 90%;
+  }
+
+  .chapter-list-item {
+    min-height: 48px;
+    padding: 0.75rem 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .chapter-list-item .chapter-number {
+    width: 32px;
+    font-size: 0.85rem;
+  }
+
+  .chapter-list-item .chapter-name {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 540px) {
+  .novels-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .novel-card-cover {
+    height: 130px;
   }
 }
 
 @media (max-width: 480px) {
   .header h1 {
-    font-size: 1.85rem;
+    font-size: 1.7rem;
+    line-height: 1.25;
+  }
+
+  .header p {
+    font-size: 0.875rem;
   }
 
   .chapter-list-panel {
     max-width: 100%;
+    width: 100%;
   }
 
-  .novels-grid {
-    grid-template-columns: 1fr;
+  .novel-cover {
+    width: 120px;
+    height: 170px;
+  }
+
+  .novel-info h1 {
+    font-size: 1.35rem;
+  }
+
+  .novel-meta {
+    gap: 0.75rem;
+    font-size: 0.825rem;
+  }
+
+  .novel-meta .stat {
+    font-size: 0.825rem;
+  }
+
+  .reader-header {
+    padding: 0.4rem 0.25rem;
+    gap: 0.2rem;
+  }
+
+  .action-btn,
+  .back-btn {
+    min-width: 38px;
+    min-height: 38px;
+    padding: 0.35rem;
+  }
+
+  .reader-content {
+    padding: 1rem 0.875rem calc(2rem + env(safe-area-inset-bottom, 0));
+  }
+
+  .reader-content header h1 {
+    font-size: 1.2rem !important;
+    line-height: 1.3;
+    margin-bottom: 0.4rem;
+  }
+
+  .reader-content p {
+    margin-bottom: 1.15em;
+  }
+
+  .dropzone {
+    padding: 1.5rem 0.75rem;
+  }
+
+  .dropzone-text {
+    font-size: 0.9rem;
+  }
+
+  .dropzone-hint {
+    font-size: 0.75rem;
   }
 }

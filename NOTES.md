@@ -135,7 +135,15 @@ Web novels frequently arrive in diverse legacy East Asian encodings. The decodin
   - `dark`: Deep navy/slate (`#0d1117`).
   - `sepia`: Warm paper tone (`#fbf0d9` / `#433422`).
   - `light`: Crisp daytime paper white (`#ffffff`).
-- **Typography Controls:** Dynamic font scaling (12px to 32px) saved in browser `localStorage`.
+- **Typography Controls:** Dynamic font scaling (12px to 32px) saved in browser `localStorage`, with an intelligent 16px default on mobile devices (<640px).
+
+### 4.5 Mobile & Touch Ergonomics
+- **Responsive Viewport:** Root route (`src/routes/__root.tsx`) includes `viewport-fit=cover`, `maximum-scale=5.0`, and status bar meta tags for smooth iOS and Android mobile browser rendering.
+- **Safe Area Insets:** Layouts account for device notches and gesture home indicators using `env(safe-area-inset-top)` and `env(safe-area-inset-bottom)`.
+- **iOS Zoom Prevention:** Form inputs (`input`, `select`, `textarea`) enforce at least `16px` font size on mobile breakpoints (<768px) to prevent iOS Safari auto-zooming on focus.
+- **Thumb-Friendly Navigation:** Reader bottom actions use a thumb-optimized grid where the primary action ("Selanjutnya") is aligned on the right and "Sebelumnya" on the left, with the drawer button spanning full width underneath.
+- **Touch Target Sizing:** Interactive buttons maintain minimum 40px–48px hit areas to prevent mis-clicks.
+- **Adaptive Drawer & Cards:** Library grid scales to single-column on mobile (<540px), and the chapter list drawer occupies up to 100% on small viewports (<480px).
 
 ---
 
