@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/solid-router'
-import { createSignal, createEffect, onMount, onCleanup } from 'solid-js'
+import { createSignal, createEffect, onMount, onCleanup, Show } from 'solid-js'
 import {
   ChevronLeft,
   ChevronRight,
@@ -412,7 +412,7 @@ function ChapterReaderPage() {
             </button>
           </nav>
 
-          {showChapterList() && (
+          <Show when={showChapterList()}>
             <ChapterList
               novelId={novelId()}
               chapters={chapters()}
@@ -420,7 +420,7 @@ function ChapterReaderPage() {
               onClose={() => setShowChapterList(false)}
               onSelectChapter={navigateToChapter}
             />
-          )}
+          </Show>
         </>
       )}
     </div>

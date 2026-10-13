@@ -1,4 +1,4 @@
-import { createSignal } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import { Link } from "@tanstack/solid-router";
 import {
   ChevronLeft,
@@ -31,15 +31,17 @@ export default function ReaderControls(props: ReaderControlsProps) {
   const [showSettings, setShowSettings] = createSignal(false);
   const [titleExpanded, setTitleExpanded] = createSignal(false);
 
+  const currentFontSize = () => props.fontSize;
+
   const handleFontDecrease = () => {
-    if (props.fontSize > 12) {
-      props.onFontSizeChange(props.fontSize - 2);
+    if (currentFontSize() > 12) {
+      props.onFontSizeChange(currentFontSize() - 2);
     }
   };
 
   const handleFontIncrease = () => {
-    if (props.fontSize < 32) {
-      props.onFontSizeChange(props.fontSize + 2);
+    if (currentFontSize() < 32) {
+      props.onFontSizeChange(currentFontSize() + 2);
     }
   };
 
@@ -119,16 +121,27 @@ export default function ReaderControls(props: ReaderControlsProps) {
           <button
             onClick={() => setShowSettings(!showSettings())}
             class={`action-btn font-btn ${showSettings() ? "active" : ""}`}
-            title="Pengaturan Tampilan"
+            title={`Pengaturan Tampilan (Ukuran font: ${currentFontSize()}px)`}
             aria-label="Pengaturan Tampilan"
             type="button"
+            style={{ display: "inline-flex", "align-items": "center", gap: "0.2rem" }}
           >
-            Aa
+            <span style={{ "font-size": "0.95rem", "font-weight": 600 }}>Aa</span>
+            <small
+              style={{
+                "font-size": "0.68rem",
+                "font-weight": 700,
+                opacity: 0.8,
+                "margin-left": "0.15rem",
+              }}
+            >
+              {currentFontSize()}
+            </small>
           </button>
         </div>
       </div>
 
-      {showSettings() && (
+      <Show when={showSettings()}>
         <div class="font-settings" style={{ "flex-wrap": "wrap", gap: "1rem" }}>
           <div style={{ display: "flex", "align-items": "center", gap: "0.5rem" }}>
             <span style={{ "font-size": "0.85rem", color: "var(--text-secondary)" }}>
@@ -138,16 +151,26 @@ export default function ReaderControls(props: ReaderControlsProps) {
               <button
                 type="button"
                 onClick={handleFontDecrease}
-                disabled={props.fontSize <= 12}
+                disabled={currentFontSize() <= 12}
                 aria-label="Perkecil font"
               >
                 <Minus size={16} />
               </button>
-              <span style={{ "min-width": "35px", "text-align": "center" }}>{props.fontSize}px</span>
+              <span
+                style={{
+                  "min-width": "42px",
+                  "text-align": "center",
+                  "font-weight": 700,
+                  "font-size": "0.95rem",
+                  color: "var(--text-primary)",
+                }}
+              >
+                {currentFontSize()}px
+              </span>
               <button
                 type="button"
                 onClick={handleFontIncrease}
-                disabled={props.fontSize >= 32}
+                disabled={currentFontSize() >= 32}
                 aria-label="Perbesar font"
               >
                 <Plus size={16} />
@@ -182,7 +205,7 @@ export default function ReaderControls(props: ReaderControlsProps) {
             </div>
           </div>
         </div>
-      )}
+      </Show>
 
       {/* Quick top previous/next bar */}
       <div class="reader-nav">
