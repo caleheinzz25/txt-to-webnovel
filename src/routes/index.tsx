@@ -86,7 +86,7 @@ function HomePage() {
 			<header class="header">
 				<h1>NovelReader</h1>
 				<p>
-					Upload novel TXT dan nikmati membaca dengan tampilan interaktif &
+					Upload novel TXT atau EPUB dan nikmati membaca dengan tampilan interaktif &
 					nyaman di web dan mobile
 				</p>
 			</header>

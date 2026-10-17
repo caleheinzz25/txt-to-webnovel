@@ -208,8 +208,8 @@ export function splitNovelIntoChapters(
  * Extract suggested title from text (first line or first few words).
  */
 export function extractTitle(text: string, filename: string): string {
-	// First try to get from filename (remove .txt extension)
-	const filenameTitle = filename.replace(/\.txt$/i, "").trim();
+	// First try to get from filename (remove .txt or .epub extension)
+	const filenameTitle = filename.replace(/\.(txt|epub)$/i, "").trim();
 
 	if (
 		filenameTitle &&

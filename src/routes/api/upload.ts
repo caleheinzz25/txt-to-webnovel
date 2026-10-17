@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/solid-router";
 import type { ObjectId } from "mongodb";
 import { decodeTextBuffer } from "../../lib/encoding";
+import { parseEpubBuffer } from "../../lib/epubProcessor";
 import { createManyChapters } from "../../lib/models/chapters";
 import { createNovel } from "../../lib/models/novels";
 import {
@@ -37,7 +38,57 @@ async function processAndSaveNovel(params: {
 		customPattern,
 	} = params;
 
-	// Read and decode file buffer with auto-encoding detection
+	// Handle EPUB format
+	if (fileName.toLowerCase().endsWith(".epub")) {
+		try {
+			const epubData = parseEpubBuffer(buffer);
+			const title = customTitle || epubData.title;
+
+			// Create novel document
+			const novel = await createNovel({
+				name: title,
+				totalChapters: epubData.chapters.length,
+				totalWords: epubData.totalWords,
+			});
+
+			// Create chapter documents
+			const chapters = epubData.chapters.map((ch, index) => ({
+				novelId: novel._id as ObjectId,
+				name: ch.title || `Bab ${index + 1}`,
+				chap: index + 1,
+				content: ch.content,
+				wordCount: ch.wordCount,
+			}));
+
+			await createManyChapters(chapters);
+
+			return Response.json({
+				success: true,
+				novelId: novel._id.toString(),
+				message: `Berhasil mengimpor EPUB "${title}" dengan ${epubData.chapters.length} bab`,
+				data: {
+					title: novel.name,
+					totalChapters: novel.totalChapters,
+					totalWords: novel.totalWords,
+					encoding: "EPUB",
+				},
+			});
+		} catch (epubErr) {
+			console.error("EPUB parsing error:", epubErr);
+			return Response.json(
+				{
+					success: false,
+					message:
+						epubErr instanceof Error
+							? epubErr.message
+							: "Gagal memproses berkas EPUB.",
+				},
+				{ status: 400 },
+			);
+		}
+	}
+
+	// Read and decode TXT file buffer with auto-encoding detection
 	const { text, encoding } = decodeTextBuffer(buffer, encodingParam);
 
 	if (!text.trim()) {
@@ -245,9 +296,20 @@ export const Route = createFileRoute("/api/upload")({
 					}
 
 					// Validate file type
-					if (!file.name.endsWith(".txt") && file.type !== "text/plain") {
+					const isTxt =
+						file.name.toLowerCase().endsWith(".txt") ||
+						file.type === "text/plain";
+					const isEpub =
+						file.name.toLowerCase().endsWith(".epub") ||
+						file.type === "application/epub+zip";
+
+					if (!isTxt && !isEpub) {
 						return Response.json(
-							{ success: false, message: "Only TXT files are allowed" },
+							{
+								success: false,
+								message:
+									"Hanya berkas format TXT dan EPUB yang didukung.",
+							},
 							{ status: 400 },
 						);
 					}

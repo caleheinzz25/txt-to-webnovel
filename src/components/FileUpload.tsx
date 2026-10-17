@@ -1,5 +1,6 @@
 import {
 	AlertCircle,
+	BookOpen,
 	CheckCircle,
 	FileText,
 	Loader2,
@@ -50,9 +51,12 @@ export default function FileUpload(props: FileUploadProps) {
 	});
 
 	const handleFileSelect = (selectedFile: File) => {
-		if (!selectedFile.name.toLowerCase().endsWith(".txt")) {
+		const isTxt = selectedFile.name.toLowerCase().endsWith(".txt");
+		const isEpub = selectedFile.name.toLowerCase().endsWith(".epub");
+
+		if (!isTxt && !isEpub) {
 			setStatus("error");
-			setMessage("Hanya file format .txt yang diperbolehkan.");
+			setMessage("Hanya file format .txt dan .epub yang diperbolehkan.");
 			return;
 		}
 		setFile(selectedFile);
@@ -303,7 +307,7 @@ export default function FileUpload(props: FileUploadProps) {
 				<input
 					ref={fileInputRef}
 					type="file"
-					accept=".txt"
+					accept=".txt,.epub"
 					style={{ display: "none" }}
 					onChange={(e) => {
 						if (e.currentTarget.files && e.currentTarget.files.length > 0) {
@@ -321,17 +325,26 @@ export default function FileUpload(props: FileUploadProps) {
 							</div>
 							<p class="dropzone-text">
 								{isDragActive()
-									? "Drop your TXT file here..."
-									: "Drag & drop a TXT file here, or click to select"}
+									? "Drop file TXT atau EPUB di sini..."
+									: "Drag & drop file TXT atau EPUB di sini, atau klik untuk memilih"}
 							</p>
-							<p class="dropzone-hint">Max file size: 50MB</p>
+							<p class="dropzone-hint">Format yang didukung: .txt, .epub (Max 50MB)</p>
 						</div>
 					}
 				>
 					{(f) => (
 						<div class="file-preview" onClick={(e) => e.stopPropagation()}>
 							<div class="file-info">
-								<FileText size={32} class="file-icon" />
+								<Show
+									when={f().name.toLowerCase().endsWith(".epub")}
+									fallback={<FileText size={32} class="file-icon" />}
+								>
+									<BookOpen
+										size={32}
+										class="file-icon"
+										style={{ color: "var(--accent-primary)" }}
+									/>
+								</Show>
 								<div class="file-details">
 									<p class="file-name">{f().name}</p>
 									<p class="file-size">{formatFileSize(f().size)}</p>
@@ -381,22 +394,25 @@ export default function FileUpload(props: FileUploadProps) {
 					</Show>
 
 					<Show when={status() === "idle" || status() === "error"}>
-						<div
-							style={{
-								display: "flex",
-								"flex-direction": "column",
-								"align-items": "center",
-								gap: "0.75rem",
-								"margin-bottom": "0.75rem",
-								width: "100%",
-								"max-width": "460px",
-								padding: "1rem",
-								background: "var(--bg-primary)",
-								"border-radius": "14px",
-								border: "1px solid var(--border-color)",
-								"box-shadow": "0 2px 8px rgba(0,0,0,0.04)",
-							}}
-						>
+						<Show
+							when={file()?.name.toLowerCase().endsWith(".epub")}
+							fallback={
+								<div
+									style={{
+										display: "flex",
+										"flex-direction": "column",
+										"align-items": "center",
+										gap: "0.75rem",
+										"margin-bottom": "0.75rem",
+										width: "100%",
+										"max-width": "460px",
+										padding: "1rem",
+										background: "var(--bg-primary)",
+										"border-radius": "14px",
+										border: "1px solid var(--border-color)",
+										"box-shadow": "0 2px 8px rgba(0,0,0,0.04)",
+									}}
+								>
 							{/* Selector 2 Opsi */}
 							<div
 								style={{
@@ -645,7 +661,58 @@ export default function FileUpload(props: FileUploadProps) {
 								</select>
 							</div>
 						</div>
-					</Show>
+					}
+				>
+					<div
+						style={{
+							display: "flex",
+							"align-items": "center",
+							gap: "0.85rem",
+							width: "100%",
+							"max-width": "460px",
+							padding: "1rem 1.15rem",
+							background: "var(--bg-primary)",
+							"border-radius": "14px",
+							border: "1px solid var(--border-color)",
+							"box-shadow": "0 2px 8px rgba(0,0,0,0.04)",
+							"margin-bottom": "0.75rem",
+							"font-size": "0.85rem",
+							color: "var(--text-secondary)",
+							"text-align": "left",
+						}}
+					>
+						<div
+							style={{
+								background: "rgba(99, 102, 241, 0.12)",
+								color: "var(--accent-primary)",
+								padding: "0.6rem",
+								"border-radius": "10px",
+								display: "flex",
+								"align-items": "center",
+								"justify-content": "center",
+								"flex-shrink": 0,
+							}}
+						>
+							<BookOpen size={22} />
+						</div>
+						<div>
+							<strong
+								style={{
+									color: "var(--text-primary)",
+									display: "block",
+									"margin-bottom": "0.2rem",
+									"font-size": "0.9rem",
+								}}
+							>
+								Format EPUB Terdeteksi
+							</strong>
+							<span>
+								Struktur bab, judul, dan urutan baca bawaan buku akan diekstrak secara otomatis.
+							</span>
+						</div>
+					</div>
+				</Show>
+			</Show>
 
 					<Show when={status() === "idle" || status() === "error"}>
 						<button onClick={handleUpload} class="upload-btn" type="button">
