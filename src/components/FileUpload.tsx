@@ -15,6 +15,9 @@ interface FileUploadProps {
 
 type UploadStatus = "idle" | "uploading" | "success" | "error";
 
+// 2MB chunks to stay well below Vercel 4.5MB Serverless Function payload limit
+const CHUNK_SIZE = 2 * 1024 * 1024;
+
 export default function FileUpload(props: FileUploadProps) {
 	const [file, setFile] = createSignal<File | null>(null);
 	const [isDragActive, setIsDragActive] = createSignal(false);
@@ -66,21 +69,133 @@ export default function FileUpload(props: FileUploadProps) {
 		setMessage("");
 
 		const isFixedWords = splitMode() === "fixed_words";
-		const formData = new FormData();
-		formData.append("file", currentFile);
-		formData.append("forceWordSplit", isFixedWords ? "true" : "false");
-		formData.append("wordsPerChapter", wordsPerChapter().toString());
-		formData.append("headingPreset", isFixedWords ? "auto" : headingPreset());
-		formData.append("encoding", encoding());
-		if (
-			!isFixedWords &&
-			headingPreset() === "custom" &&
-			customPattern().trim()
-		) {
-			formData.append("customPattern", customPattern().trim());
-		}
 
 		try {
+			// Chunked upload for files > 2MB to prevent Vercel 4.5MB Serverless Function payload limit
+			if (currentFile.size > CHUNK_SIZE) {
+				const uploadId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+				const totalChunks = Math.ceil(currentFile.size / CHUNK_SIZE);
+
+				for (let i = 0; i < totalChunks; i++) {
+					const start = i * CHUNK_SIZE;
+					const end = Math.min(start + CHUNK_SIZE, currentFile.size);
+					const chunkBlob = currentFile.slice(start, end);
+
+					const chunkFormData = new FormData();
+					chunkFormData.append("action", "chunk");
+					chunkFormData.append("uploadId", uploadId);
+					chunkFormData.append("chunkIndex", i.toString());
+					chunkFormData.append("totalChunks", totalChunks.toString());
+					chunkFormData.append("chunk", chunkBlob, currentFile.name);
+
+					setMessage(`Mengunggah bagian ${i + 1} dari ${totalChunks}...`);
+
+					let chunkSuccess = false;
+					let lastErr = "";
+					for (let retry = 0; retry < 2; retry++) {
+						try {
+							const res = await fetch("/api/upload", {
+								method: "POST",
+								body: chunkFormData,
+							});
+							if (res.ok) {
+								chunkSuccess = true;
+								break;
+							}
+							lastErr = `Server error (${res.status})`;
+						} catch (e) {
+							lastErr = e instanceof Error ? e.message : "Network error";
+						}
+					}
+
+					if (!chunkSuccess) {
+						throw new Error(
+							`Gagal mengunggah bagian ${i + 1}/${totalChunks}: ${lastErr}`,
+						);
+					}
+
+					const pct = Math.round(((i + 1) / totalChunks) * 85);
+					setProgress(pct);
+				}
+
+				setProgress(90);
+				setMessage("Menyusun dan membagi bab novel...");
+
+				const completeFormData = new FormData();
+				completeFormData.append("action", "complete");
+				completeFormData.append("uploadId", uploadId);
+				completeFormData.append("fileName", currentFile.name);
+				completeFormData.append("forceWordSplit", isFixedWords ? "true" : "false");
+				completeFormData.append("wordsPerChapter", wordsPerChapter().toString());
+				completeFormData.append("headingPreset", isFixedWords ? "auto" : headingPreset());
+				completeFormData.append("encoding", encoding());
+				if (
+					!isFixedWords &&
+					headingPreset() === "custom" &&
+					customPattern().trim()
+				) {
+					completeFormData.append("customPattern", customPattern().trim());
+				}
+
+				const response = await fetch("/api/upload", {
+					method: "POST",
+					body: completeFormData,
+				});
+
+				if (!response.ok) {
+					let errorMsg = `Server error (${response.status})`;
+					try {
+						const errData = await response.json();
+						if (errData?.message) errorMsg = errData.message;
+					} catch {
+						if (response.status === 413) {
+							errorMsg =
+								"Ukuran file terlalu besar untuk server (413 Payload Too Large).";
+						} else if (response.status === 504) {
+							errorMsg =
+								"Proses upload memakan waktu terlalu lama (504 Timeout).";
+						}
+					}
+					throw new Error(errorMsg);
+				}
+
+				const result = await response.json();
+				if (!result.success) {
+					throw new Error(result.message || "Gagal memproses file.");
+				}
+
+				setProgress(100);
+				setStatus("success");
+				setMessage(
+					result.message ||
+						`${result.data?.totalChapters || 0} bab berhasil dibuat`,
+				);
+				props.onUploadSuccess?.(result.novelId);
+
+				setTimeout(() => {
+					setFile(null);
+					setStatus("idle");
+					setProgress(0);
+					setMessage("");
+				}, 2000);
+				return;
+			}
+
+			// Direct upload for smaller files <= 2MB
+			const formData = new FormData();
+			formData.append("file", currentFile);
+			formData.append("forceWordSplit", isFixedWords ? "true" : "false");
+			formData.append("wordsPerChapter", wordsPerChapter().toString());
+			formData.append("headingPreset", isFixedWords ? "auto" : headingPreset());
+			formData.append("encoding", encoding());
+			if (
+				!isFixedWords &&
+				headingPreset() === "custom" &&
+				customPattern().trim()
+			) {
+				formData.append("customPattern", customPattern().trim());
+			}
+
 			progressTimer = setInterval(() => {
 				setProgress((prev) => Math.min(prev + 5, 95));
 			}, 300);
@@ -135,6 +250,7 @@ export default function FileUpload(props: FileUploadProps) {
 				props.onUploadError?.(result.message);
 			}
 		} catch (error) {
+			clearInterval(progressTimer);
 			const errMsg =
 				error instanceof Error
 					? error.message
