@@ -1,4 +1,5 @@
 import { createRouter as createTanStackRouter } from "@tanstack/solid-router";
+import NotFoundComponent from "./components/NotFound";
 import { getContext } from "./integrations/tanstack-query/provider";
 import { routeTree } from "./routeTree.gen";
 
@@ -11,6 +12,7 @@ export function getRouter() {
 		scrollRestoration: true,
 		defaultPreload: "intent",
 		defaultPreloadStaleTime: 0,
+		defaultNotFoundComponent: NotFoundComponent,
 	});
 
 	return router;
