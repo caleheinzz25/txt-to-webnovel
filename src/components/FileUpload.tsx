@@ -32,6 +32,7 @@ export default function FileUpload(props: FileUploadProps) {
 		| "chinese"
 		| "japanese"
 		| "korean"
+		| "episode"
 		| "cjk"
 		| "indonesian"
 		| "english"
@@ -505,9 +506,10 @@ export default function FileUpload(props: FileUploadProps) {
 												}}
 											>
 												<option value="auto">Auto-Detect</option>
+												<option value="episode">Episode / EP (EP0001, EP.01)</option>
 												<option value="chinese">Chinese (第X章)</option>
 												<option value="japanese">Japanese (第X話)</option>
-												<option value="korean">Korean (X화)</option>
+												<option value="korean">Korean (X화, EP)</option>
 												<option value="indonesian">Bab (Indo)</option>
 												<option value="english">Chapter (Eng)</option>
 												<option value="numeric">1., 2. (Numbers)</option>

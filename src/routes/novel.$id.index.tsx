@@ -58,6 +58,7 @@ function NovelDetailPage() {
 		| "chinese"
 		| "japanese"
 		| "korean"
+		| "episode"
 		| "cjk"
 		| "indonesian"
 		| "english"
@@ -389,7 +390,10 @@ function NovelDetailPage() {
 													class="heading-select"
 												>
 													<option value="auto">
-														Auto-Detect (Semua Bahasa)
+														Auto-Detect (Semua Bahasa & EP)
+													</option>
+													<option value="episode">
+														Episode / EP (EP0001, EP.01, Episode 1)
 													</option>
 													<option value="chinese">
 														Chinese / 中文 (第X章, 第X回, 序章)
@@ -398,7 +402,7 @@ function NovelDetailPage() {
 														Japanese / 日本語 (第X話, X話, プロローグ)
 													</option>
 													<option value="korean">
-														Korean / 한국어 (X화, 제X화, 프롤로그)
+														Korean / 한국어 (X화, 제X화, EP0001, 프롤로그)
 													</option>
 													<option value="indonesian">
 														Bahasa Indonesia (Bab, Bagian, Episode)
