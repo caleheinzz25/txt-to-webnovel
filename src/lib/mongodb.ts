@@ -1,6 +1,10 @@
 import { type Db, MongoClient } from "mongodb";
 
-const options = {};
+const options = {
+	maxPoolSize: 10,
+	minPoolSize: 1,
+	maxIdleTimeMS: 60000,
+};
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -13,19 +17,18 @@ function getClientPromise(): Promise<MongoClient> {
 	}
 
 	const uri = process.env.MONGODB_URI;
-	if (process.env.NODE_ENV === "development") {
-		// In development mode, use a global variable so that the value
-		// is preserved across module reloads caused by HMR (Hot Module Replacement).
-		if (!global._mongoClientPromise) {
-			const client = new MongoClient(uri, options);
-			global._mongoClientPromise = client.connect();
-		}
-		return global._mongoClientPromise;
-	} else {
-		// In production mode, it's best to not use a global variable.
+
+	// In serverless environments (Vercel) as well as development, caching the promise
+	// ensures warm containers reuse the existing connection pool instead of performing
+	// a full TLS + auth handshake on every request.
+	if (!global._mongoClientPromise) {
 		const client = new MongoClient(uri, options);
-		return client.connect();
+		global._mongoClientPromise = client.connect().catch((err) => {
+			global._mongoClientPromise = undefined;
+			throw err;
+		});
 	}
+	return global._mongoClientPromise;
 }
 
 export async function getDatabase(): Promise<Db> {
